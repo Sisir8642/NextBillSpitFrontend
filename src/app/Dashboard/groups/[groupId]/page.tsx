@@ -123,9 +123,11 @@ const GroupDashboardPage: React.FC = () => {
             label: p.email, 
             value: p.email,  
           }))
-          .filter((option, idx, self) =>
-            idx === self.findIndex((o) => o.value === option.value)
-          );
+          .filter(
+  (option: { label: string; value: string }, idx: number, self: { label: string; value: string }[]) =>
+    idx === self.findIndex((o: { label: string; value: string }) => o.value === option.value)
+);
+
 
         setMemberOptions(options);
         if (options.length > 0) setPaidBy(options[0].value);
@@ -309,7 +311,10 @@ const GroupDashboardPage: React.FC = () => {
       </header>
       <div className='px-20 py-4 '>
         <main className="px-8 py-6 space-y-10 bg-[#0f0f12] min-h-screen text-white">
-          <NetBalanceCalculate settlements={settlements} />
+          <NetBalanceCalculate settlements={settlements.map(s => ({
+            ...s,
+            amount: Number(s.amount),
+          }))} />
 
           <section>
             <h2 className="text-xl font-bold mb-4"> Expenses</h2>

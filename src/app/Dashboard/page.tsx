@@ -36,7 +36,7 @@ const DashboardPage = () => {
     try {
       const response = await baseapi.get("/api/groups/");
       const uniqueGroups = Array.from(
-        new Map(response.data.map(group => [group.id, group])).values()
+        new Map(response.data.map((group: any) => [group.id, group])).values()
       );
       setGroups(uniqueGroups);
     } catch (error) {
