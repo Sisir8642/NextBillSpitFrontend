@@ -65,7 +65,7 @@ interface ExpensePayload {
   group_id: string;
   paid_by: string;      // email
   description: string;
-  amount: string;
+  amount: number;
   split_type: 'equal' | 'custom';
   participants: Participant[];
 }
@@ -202,41 +202,54 @@ const GroupDashboardPage: React.FC = () => {
       return;
     }
 
-    const preparedParticipants = participants.map(p => ({
-      user: p.user,
-      paid_amount: p.paid_amount || "0",
-      share_amount: p.share_amount ?? "0.00",
-    }));
+   const preparedParticipants = participants.map(p => ({
+  user: p.user,
+  paid_amount: (Number(p.paid_amount) || 0).toString(),
+  share_amount: (Number(p.share_amount) || 0).toFixed(2),
+}));
 
     const payload: ExpensePayload = {
-      group_id: groupId,
-      paid_by: paidBy,
-      description,
-      amount,
-      split_type: splitType,
-      participants: preparedParticipants,
-    };
-
-    try {
-      console.log("Submitting payload:", payload);
-      await baseapi.post("/api/expenses/", payload);
-      alert("Expense created successfully");
-
-      setDescription("");
-      setAmount("");
-      setPaidBy("");
-      setSplitType("equal");
-      setParticipants([]);
-      await fetchExpenses();
-    } catch (err: any) {
-      console.error("Error creating expense:", err);
-    }
-  };
-
-  const handleSettleClick = (index: number) => {
-  setSettledIndexes(prev => [...prev, index]);
+  group_id: groupId,
+  paid_by: paidBy,
+  description: description.trim(),
+  amount: Number(amount),
+  split_type: splitType,
+  participants: preparedParticipants,
 };
 
+    
+try {
+  console.log("Submitting payload:", payload);
+  await baseapi.post("/api/expenses/", payload);
+  alert("Expense created successfully");
+
+  setDescription("");
+  setAmount("");
+  setPaidBy("");
+  setSplitType("equal");
+  setParticipants([]);
+  await fetchExpenses();
+} catch (err: any) {
+  if (err.response) {
+    // Backend responded with a status code outside 2xx
+    console.error("Backend error response:", err.response.data, err.response.status);
+    alert(`Error: ${JSON.stringify(err.response.data)}`);
+  } else if (err.request) {
+    // Request was made but no response received
+    console.error("No response received:", err.request);
+    alert("No response received from server. Check your network or backend.");
+  } else {
+    // Something else happened
+    console.error("Error setting up request:", err.message);
+    alert(`Error: ${err.message}`);
+  }
+}
+}; 
+  // <-- MISSING CLOSING BRACE ADDED ABOVE
+
+  const handleSettleClick = (index: number) => {
+    setSettledIndexes(prev => [...prev, index]);
+  };
 
   const updateParticipant = (index: number, field: keyof Participant, value: string) => {
     setParticipants(prev => {
