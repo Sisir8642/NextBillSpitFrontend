@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   CardHeader,
@@ -16,59 +16,57 @@ import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-
 export default function LoginPage() {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const { login, isAuthenticated, isLoading } = useAuth();
+  const { login, isLoading } = useAuth();
   const router = useRouter();
 
-
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setError(null);
-  setIsSubmitting(true);
+    e.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
 
-  try {
-    await login(username, password);
+    try {
+      await login(username, password);
 
-    // Get token from query params (e.g. /login?next=/accept-invite/TOKEN)
-    const params = new URLSearchParams(window.location.search);
-    const nextUrl = params.get("next");
+      const params = new URLSearchParams(window.location.search);
+      const nextUrl = params.get("next");
 
-    if (nextUrl) {
-      router.push(nextUrl); // Redirect to accept-invite page
-    } else {
-      router.push("/Dashboard");
+      if (nextUrl) {
+        router.push(nextUrl);
+      } else {
+        router.push("/Dashboard");
+      }
+    } catch (error: any) {
+      setError(error.message || "Error occurred !!");
+    } finally {
+      setIsSubmitting(false);
     }
-
-  } catch (error: any) {
-    setError(error.message || "Error occurred !!");
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
+  };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
         <CgSpinner className="animate-spin h-8 w-8 text-blue-500" />
-        <span className="ml-2 text-gray-700 dark:text-gray-300">Loading authentication...</span>
+        <span className="ml-2 text-gray-700 dark:text-gray-300">
+          Loading authentication...
+        </span>
       </div>
     );
   }
 
-  // if (isAuthenticated) return null;
-
   return (
-    <div className="flex items-center justify-center min-h-screen dark:bg-[#151519]">
+    <div className="flex flex-col items-center justify-center min-h-screen space-y-6 dark:bg-[#151519]">
+      {/* Login Card */}
       <Card className="w-full max-w-md p-6 shadow-md bg-[#212128] h-100">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center pt-5">Login</CardTitle>
-          <CardDescription>Enter your credentials to access the dashboard.</CardDescription>
+          <CardDescription>
+            Enter your credentials to access the dashboard.
+          </CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -97,7 +95,9 @@ export default function LoginPage() {
               />
             </div>
 
-            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+            {error && (
+              <p className="text-red-500 text-sm text-center">{error}</p>
+            )}
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? (
@@ -120,6 +120,29 @@ export default function LoginPage() {
             </Link>
           </p>
         </CardFooter>
+      </Card>
+
+      {/* Tester Credentials Table */}
+      <Card className="w-full max-w-md p-4 shadow-md bg-[#212128]">
+        <CardHeader>
+          <CardTitle className="text-lg text-center">Tester Credentials</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <table className="w-full border border-gray-600 text-sm text-gray-300">
+            <thead>
+              <tr className="bg-gray-700">
+                <th className="p-2 border border-gray-600">Email</th>
+                <th className="p-2 border border-gray-600">Password</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="p-2 border border-gray-600 text-center">baburam@gmail.com</td>
+                <td className="p-2 border border-gray-600 text-center">baburam</td>
+              </tr>
+            </tbody>
+          </table>
+        </CardContent>
       </Card>
     </div>
   );
